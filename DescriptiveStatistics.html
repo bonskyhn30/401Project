@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Project 2 Descriptive Statistics</title>
+	<script type="text/javascript" src="d3.js"></script>
+	<style type="text/css">
+
+
+
+
+		/* Lots of new CSS rules! */
+
+		/* HTML page styles */
+
+		* {
+			margin: 0;
+			padding: 0;
+		}
+
+		body {
+			font-family: Helvetica, Arial, sans-serif;
+			background-color: #eee;
+		}
+
+		#container {
+			width: 800px;
+			margin: 25px auto 25px auto;
+			padding: 50px 50px 50px 50px;
+			background-color: white;
+			box-shadow: 0 0 20px #ccc;
+		}
+
+		h1 {
+			margin-bottom: 25px;
+			font-size: 24px;
+		}
+
+		h2 {
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		p {
+			margin-bottom: 25px;
+			font-size: 14px;
+			line-height: 18px;
+		}
+
+		.chartContainer {
+			/* Nothing here yet… */
+		}
+
+		#buttonContainer {
+			margin-bottom: 10px;
+		}
+
+		button {
+			padding: 15px;
+		}
+
+		#footer p {
+			margin-top: 50px;
+			margin-bottom: 0;
+			text-align: right;
+			font-size: 10px;
+			color: gray;
+		}
+
+		/* Chart styles */
+
+		svg {
+			display: block;
+			margin-bottom: 10px;
+			background-color: white;
+		}
+
+		g.bar {
+			cursor: pointer;
+		}
+
+		g.bar text {
+			font-family: sans-serif;
+			font-size: 11px;
+			fill: gray;
+			font-style: bold;
+			text-anchor: middle;
+			opacity: 0;
+		}
+
+		g.bar.highlight text {
+			opacity: 1;
+		}
+
+		g.bar.highlight rect {
+			fill: Maroon;
+		}
+
+		.axis path,
+		.axis line {
+			fill: none;
+			stroke: black;
+			shape-rendering: crispEdges;
+		}
+		
+		.axis text {
+			font-family: sans-serif;
+			font-size: 11px;
+		}
+
+	</style>
+</head>
+<body>
+
+<!-- New HTML structure and content! -->
+	<div id="container">
+
+		<h1>Descriptive Statistics</h1>
+
+		<div class="chartContainer" id="raceChartContainer">
+			<h2>Same Race Histogram</h2>
+		</div>
+
+		<div class="chartContainer" id="goalChartContainer">
+			<h2>Goal of the Night Histogram</h2>
+		</div>
+
+		<div class="chartContainer" id="outChartContainer">
+			<h2>How Often Do You Go Out (not necessarily on dates) Histogram</h2>
+		</div>
+
+		<div class="chartContainer" id="dateChartContainer">
+			<h2>How Frequently Do You Go On Dates (in general) Histogram</h2>
+		</div>
+
+		<div class="chartContainer" id="femaleChartContainer">
+			<h2>Average Female Interest (1-10)</h2>
+		</div>
+
+		<div class="chartContainer" id="maleChartContainer">
+			<h2>Average Male Interest (1-10)</h2>
+		</div>
+		<div class="chartContainer" id="flookChartContainer">
+			<h2>Average Female Looking for in the Opposite Sex (% out of 100)</h2>
+		</div>
+
+		<div class="chartContainer" id="mlookChartContainer">
+			<h2>Average Male Looking for in the Opposite Sex (% out of 100)</h2>
+		</div>
+		<div id="buttonContainer">
+			<button id="sort">Sort by Value</button>
+		</div>
+		
+		<div id="footer">
+			<p><strong>Note:</strong> data taken from Kaggle </p>
+		</div>
+
+	</div>
+	
+
+
+	<script type="text/javascript">
+
+
+		//Sort button state
+		//Default action for button will be to sort by *value*
+		var sortByNameOrValue = false;
+
+		//New, dynamic width value pulled from .chartContainer
+		var w = d3.select(".chartContainer").node().clientWidth;
+
+
+		//Height, padding
+		var h = 250;
+		var padding = 50;
+		
+		//Sample data
+		var dataset = [
+						{
+							name:	"Different Race",
+							count:	3964,
+						},
+						{
+							name:	"Same Race",
+							count:	2460,
+						}
+					];
+		
+		var goal = [
+						{
+							name:	"Seemed like a fun night out",
+							count:	170,
+						},
+						{
+							name:	"To meet new people",
+							count:	145,
+						},
+						{
+							name:	"To get a date",
+							count:	32,
+						},
+						{
+							name:	"Looking for a serious relationship",
+							count:	14,
+						},
+						{
+							name:	"To say I did it",
+							count:	29,
+						},
+						{
+							name:	"Other",
+							count:	25,
+						},
+						{
+							name:	"Missing",
+							count:	6,
+						}
+					];
+		var out = [
+						{
+							name:	"Several times a week",
+							out:    141,
+							date:   6,
+						},
+						{
+							name:	"Twice a week",
+							out:	135,
+							date:   19,
+						},
+												{
+							name:	"Once a week",
+							out:	97,
+							date:   40,
+						},
+												{
+							name:	"Twice a month",
+							out:	25,
+							date:   101,
+						},
+												{
+							name:	"Once a month",
+							out:	9,
+							date:   74,
+						},
+												{
+							name:	"Several times a year",
+							out:	6,
+							date:   99,
+						},
+												{
+							name:	"Almost Never",
+							out:	2,
+							date:   75,
+						},
+												{
+							name:	"Missing",
+							out:	6,
+							date:   7,
+						},
+					];
+		var interest = [
+						{
+							name:	"sports",
+							female: 5,
+							male:   7,
+						},
+						{
+							name:	"tv sports",
+							female: 4,
+							male:   5,
+						},
+												{
+							name:	"exercise",
+							female: 6,
+							male:   6,
+						},
+												{
+							name:	"dining",
+							female: 8,
+							male:   7,
+						},
+												{
+							name:	"museums",
+							female: 7,
+							male:   6,
+						},
+												{
+							name:	"art",
+							female: 7,
+							male:   6,
+						},
+												{
+							name:	"hiking",
+							female: 6,
+							male:   6,
+						},
+												{
+							name:	"gaming",
+							female: 3,
+							male:   5,
+						},
+												{
+							name:	"clubbing",
+							female: 6,
+							male:   6,
+						},
+												{
+							name:	"reading",
+							female: 8,
+							male:   7,
+						},
+							{
+							name:	"tv",
+							female: 6,
+							male:   5,
+						},
+
+							{
+							name:	"theater",
+							female: 8,
+							male:   6,
+						},
+							{
+							name:	"movies",
+							female: 8,
+							male:   8,
+						},
+							{
+							name:	"concerts",
+							female: 7,
+							male:   7,
+						},
+							{
+							name:	"music",
+							female: 8,
+							male:   8,
+						},
+						    {
+							name:	"shopping",
+							female: 6,
+							male:   5,
+						},
+							{
+							name:	"yoga",
+							female: 5,
+							male:   4,
+						},
+							{
+							name:	"Count of Missing-section not filled out",
+							female: 1,
+							male:   5,
+						},
+					];
+		
+		var look = [
+						{
+							name:	"Attractive",
+							female: 23,
+							male:   33,
+						},
+						{
+							name:	"Sincere",
+							female: 16,
+							male:   15,
+						},
+												{
+							name:	"Intelligent",
+							female: 19,
+							male:   16,
+						},
+												{
+							name:	"Fun",
+							female: 18,
+							male:   18,
+						},
+												{
+							name:	"Ambitious",
+							female: 10,
+							male:   8,
+						},
+												{
+							name:	"Shared Interests",
+							female: 14,
+							male:   11,
+						},
+												{
+							name:	"Count of Missing-section not filled out",
+							female: 29,
+							male:   22,
+						},
+					];
+
+
+		//Configure x and y scale functions
+		var countxScale = d3.scale.ordinal()
+						.domain(d3.range(dataset.length))
+						.rangeRoundBands([ padding, w - padding ], 0.05);
+		var goalxScale = d3.scale.ordinal()
+						.domain(d3.range(goal.length))
+						.rangeRoundBands([ padding, w - padding ], 0.05);
+		var outxScale = d3.scale.ordinal()
+						.domain(d3.range(out.length))
+						.rangeRoundBands([ padding, w - padding ], 0.05);
+		var interestxScale = d3.scale.ordinal()
+						.domain(d3.range(interest.length))
+						.rangeRoundBands([ padding, w - padding ], 0.05);
+		var lookxScale = d3.scale.ordinal()
+						.domain(d3.range(look.length))
+						.rangeRoundBands([ padding, w - padding ], 0.05);
+
+		//Now using two different y scales for two different charts
+		var countScale = d3.scale.linear()
+						.domain([ 0, d3.max(dataset, function(d) {
+							return d.count;
+						}) ])
+						.rangeRound([ h - padding, padding ]);
+		var goalScale = d3.scale.linear()
+						.domain([ 0, d3.max(goal, function(d) {
+							return d.count;
+						}) ])
+						.rangeRound([ h - padding, padding ]);
+		var outScale = d3.scale.linear()
+						.domain([ 0, d3.max(out, function(d) {
+							return d.out;
+						}) ])
+						.rangeRound([ h - padding, padding ]);
+		var dateScale = d3.scale.linear()
+						.domain([ 0, d3.max(out, function(d) {
+							return d.date;
+						}) ])
+						.rangeRound([ h - padding, padding ]);
+		var femaleScale = d3.scale.linear()
+						.domain([ 0, d3.max(interest, function(d) {
+							return d.female;
+						}) ])
+						.rangeRound([ h - padding, padding ]);
+		var maleScale = d3.scale.linear()
+						.domain([ 0, d3.max(interest, function(d) {
+							return d.male;
+						}) ])
+						.rangeRound([ h - padding, padding ]);
+		var flookScale = d3.scale.linear()
+						.domain([ 0, d3.max(look, function(d) {
+							return d.female;
+						}) ])
+						.rangeRound([ h - padding, padding ]);
+		var mlookScale = d3.scale.linear()
+						.domain([ 0, d3.max(look, function(d) {
+							return d.male;
+						}) ])
+						.rangeRound([ h - padding, padding ]);
+
+		//Now using two different y axes
+		var countAxis = d3.svg.axis()
+						.scale(countScale)
+						.orient("left")
+						.ticks(4);
+		var goalAxis = d3.svg.axis()
+						.scale(goalScale)
+						.orient("left")
+						.ticks(5);
+		var outAxis = d3.svg.axis()
+						.scale(outScale)
+						.orient("left")
+						.ticks(5);
+		var dateAxis = d3.svg.axis()
+						.scale(dateScale)
+						.orient("left")
+						.ticks(5);
+		var femaleAxis = d3.svg.axis()
+						.scale(femaleScale)
+						.orient("left")
+						.ticks(4);
+		var maleAxis = d3.svg.axis()
+						.scale(maleScale)
+						.orient("left")
+						.ticks(4);
+		var flookAxis = d3.svg.axis()
+						.scale(flookScale)
+						.orient("left")
+						.ticks(4);
+		var mlookAxis = d3.svg.axis()
+						.scale(mlookScale)
+						.orient("left")
+						.ticks(4);
+
+		//
+		// Make the race chart (count data)
+		//
+
+		//Create SVG element
+		var svg = d3.select("#raceChartContainer")  //New target location!
+					.append("svg")
+					.attr("id", "raceChart")
+					.attr("width", w)
+					.attr("height", h);
+
+		//Create groups
+		var groups = svg.selectAll("g")
+						.data(dataset)
+						.enter()
+						.append("g")
+						.attr("class", "bar")
+						.attr("transform", function(d, i) {
+					  		return "translate(" + countxScale(i) + ",0)";
+						});
+
+		//Add bar to each group
+		var rects = groups.append("rect")
+						  .attr("x", 0)
+						  .attr("y", function(d) {
+						  		return h - padding;
+						  })
+						  .attr("width", countxScale.rangeBand())
+						  .attr("height", 0)
+						  .attr("fill", "SteelBlue");
+
+		//Add label to each group
+		groups.append("text")
+			.attr("x", countxScale.rangeBand() / 2)
+			.attr("y", function(d) {
+				return countScale(d.count) + 14;
+			})
+			.text(function(d) {
+				return d.name + ": " + d.count;
+			})
+
+		//Transition rects into place
+		rects.transition()
+			.delay(function(d, i) {
+				return i * 100;
+			})
+			.duration(1500)
+			.attr("y", function(d) {
+				return countScale(d.count);
+			})
+			.attr("height", function(d) {
+				return h - padding - countScale(d.count);
+			});
+
+		//Create y axis
+		svg.append("g")
+			.attr("class", "axis")
+			.attr("transform", "translate(" + padding + ",0)")
+			.attr("opacity", 0)
+			.call(countAxis)
+			.transition()
+			.delay(1000)
+			.duration(1500)
+			.attr("opacity", 1.0);
+
+
+
+// Make the goal chart (goal data)
+		//
+
+		//Create SVG element
+		svg = d3.select("#goalChartContainer")  //New target location!
+					.append("svg")
+					.attr("id", "goalChart")
+					.attr("width", w)
+					.attr("height", h);
+
+		//Create groups
+		groups = svg.selectAll("g")
+						.data(goal)
+						.enter()
+						.append("g")
+						.attr("class", "bar")
+						.attr("transform", function(d, i) {
+					  		return "translate(" + goalxScale(i) + ",0)";
+						});
+
+		//Add bar to each group
+		rects = groups.append("rect")
+						  .attr("x", 0)
+						  .attr("y", function(d) {
+						  		return h - padding;
+						  })
+						  .attr("width", goalxScale.rangeBand())
+						  .attr("height", 0)
+						  .attr("fill", "SteelBlue");
+
+		//Add label to each group
+		groups.append("text")
+			.attr("x", goalxScale.rangeBand() / 2)
+			.attr("y", function(d) {
+				return goalScale(d.count) + 14;
+			})
+			.text(function(d) {
+				return d.name + ": " + d.count;
+			})
+
+		//Transition rects into place
+		rects.transition()
+			.delay(function(d, i) {
+				return i * 100;
+			})
+			.duration(1500)
+			.attr("y", function(d) {
+				return goalScale(d.count);
+			})
+			.attr("height", function(d) {
+				return h - padding - goalScale(d.count);
+			});
+
+		//Create y axis
+		svg.append("g")
+			.attr("class", "axis")
+			.attr("transform", "translate(" + padding + ",0)")
+			.attr("opacity", 0)
+			.call(goalAxis)
+			.transition()
+			.delay(2000)
+			.duration(1500)
+			.attr("opacity", 1.0);
+
+
+
+// Make the first out chart (out data)
+		//
+
+		//Create SVG element
+		var svg = d3.select("#outChartContainer")  //New target location!
+					.append("svg")
+					.attr("id", "outChart")
+					.attr("width", w)
+					.attr("height", h);
+
+		//Create groups
+		var groups = svg.selectAll("g")
+						.data(out)
+						.enter()
+						.append("g")
+						.attr("class", "bar")
+						.attr("transform", function(d, i) {
+					  		return "translate(" + outxScale(i) + ",0)";
+						});
+
+		//Add bar to each group
+		var rects = groups.append("rect")
+						  .attr("x", 0)
+						  .attr("y", function(d) {
+						  		return h - padding;
+						  })
+						  .attr("width", outxScale.rangeBand())
+						  .attr("height", 0)
+						  .attr("fill", "SteelBlue");
+
+		//Add label to each group
+		groups.append("text")
+			.attr("x", outxScale.rangeBand() / 2)
+			.attr("y", function(d) {
+				return outScale(d.out) + 14;
+			})
+			.text(function(d) {
+				return d.name + ": " + d.out;
+			})
+
+		//Transition rects into place
+		rects.transition()
+			.delay(function(d, i) {
+				return i * 100;
+			})
+			.duration(1500)
+			.attr("y", function(d) {
+				return outScale(d.out);
+			})
+			.attr("height", function(d) {
+				return h - padding - outScale(d.out);
+			});
+
+		//Create y axis
+		svg.append("g")
+			.attr("class", "axis")
+			.attr("transform", "translate(" + padding + ",0)")
+			.attr("opacity", 0)
+			.call(outAxis)
+			.transition()
+			.delay(2000)
+			.duration(1500)
+			.attr("opacity", 1.0);
+
+
+
+		//
+		// Make the second out chart (date data)
+		//
+
+		//Create SVG element
+		svg = d3.select("#dateChartContainer")  //New target location!
+					.append("svg")
+					.attr("id", "dateChart")
+					.attr("width", w)
+					.attr("height", h);
+
+		//Create groups
+		groups = svg.selectAll("g")
+						.data(out)
+						.enter()
+						.append("g")
+						.attr("class", "bar")
+						.attr("transform", function(d, i) {
+					  		return "translate(" + outxScale(i) + ",0)";
+						});
+
+		//Add bar to each group
+		rects = groups.append("rect")
+						  .attr("x", 0)
+						  .attr("y", function(d) {
+						  		return h - padding;
+						  })
+						  .attr("width", outxScale.rangeBand())
+						  .attr("height", 0)
+						  .attr("fill", "SteelBlue");
+
+		//Add label to each group
+		groups.append("text")
+			.attr("x", outxScale.rangeBand() / 2)
+			.attr("y", function(d) {
+				return dateScale(d.date) + 14;
+			})
+			.text(function(d) {
+				return d.name + ": " + d.date;
+			})
+
+		//Transition rects into place
+		rects.transition()
+			.delay(function(d, i) {
+				return i * 100;
+			})
+			.duration(1500)
+			.attr("y", function(d) {
+				return dateScale(d.date);
+			})
+			.attr("height", function(d) {
+				return h - padding - dateScale(d.date);
+			});
+
+		//Create y axis
+		svg.append("g")
+			.attr("class", "axis")
+			.attr("transform", "translate(" + padding + ",0)")
+			.attr("opacity", 0)
+			.call(dateAxis)
+			.transition()
+			.delay(2000)
+			.duration(1500)
+			.attr("opacity", 1.0);
+
+
+// Make the first interest chart (female data)
+		//
+
+		//Create SVG element
+		var svg = d3.select("#femaleChartContainer")  //New target location!
+					.append("svg")
+					.attr("id", "femaleChart")
+					.attr("width", w)
+					.attr("height", h);
+
+		//Create groups
+		var groups = svg.selectAll("g")
+						.data(interest)
+						.enter()
+						.append("g")
+						.attr("class", "bar")
+						.attr("transform", function(d, i) {
+					  		return "translate(" + interestxScale(i) + ",0)";
+						});
+
+		//Add bar to each group
+		var rects = groups.append("rect")
+						  .attr("x", 0)
+						  .attr("y", function(d) {
+						  		return h - padding;
+						  })
+						  .attr("width", interestxScale.rangeBand())
+						  .attr("height", 0)
+						  .attr("fill", "SteelBlue");
+
+		//Add label to each group
+		groups.append("text")
+			.attr("x", interestxScale.rangeBand() / 2)
+			.attr("y", function(d) {
+				return outScale(d.female) + 14;
+			})
+			.text(function(d) {
+				return d.name + ": " + d.female;
+			})
+
+		//Transition rects into place
+		rects.transition()
+			.delay(function(d, i) {
+				return i * 100;
+			})
+			.duration(1500)
+			.attr("y", function(d) {
+				return femaleScale(d.female);
+			})
+			.attr("height", function(d) {
+				return h - padding - femaleScale(d.female);
+			});
+
+		//Create y axis
+		svg.append("g")
+			.attr("class", "axis")
+			.attr("transform", "translate(" + padding + ",0)")
+			.attr("opacity", 0)
+			.call(femaleAxis)
+			.transition()
+			.delay(2000)
+			.duration(1500)
+			.attr("opacity", 1.0);
+
+
+
+		//
+		// Make the second interest chart (male data)
+		//
+
+		//Create SVG element
+		svg = d3.select("#maleChartContainer")  //New target location!
+					.append("svg")
+					.attr("id", "maleChart")
+					.attr("width", w)
+					.attr("height", h);
+
+		//Create groups
+		groups = svg.selectAll("g")
+						.data(interest)
+						.enter()
+						.append("g")
+						.attr("class", "bar")
+						.attr("transform", function(d, i) {
+					  		return "translate(" + interestxScale(i) + ",0)";
+						});
+
+		//Add bar to each group
+		rects = groups.append("rect")
+						  .attr("x", 0)
+						  .attr("y", function(d) {
+						  		return h - padding;
+						  })
+						  .attr("width", interestxScale.rangeBand())
+						  .attr("height", 0)
+						  .attr("fill", "SteelBlue");
+
+		//Add label to each group
+		groups.append("text")
+			.attr("x", interestxScale.rangeBand() / 2)
+			.attr("y", function(d) {
+				return dateScale(d.male) + 14;
+			})
+			.text(function(d) {
+				return d.name + ": " + d.male;
+			})
+
+		//Transition rects into place
+		rects.transition()
+			.delay(function(d, i) {
+				return i * 100;
+			})
+			.duration(1500)
+			.attr("y", function(d) {
+				return maleScale(d.male);
+			})
+			.attr("height", function(d) {
+				return h - padding - maleScale(d.male);
+			});
+
+		//Create y axis
+		svg.append("g")
+			.attr("class", "axis")
+			.attr("transform", "translate(" + padding + ",0)")
+			.attr("opacity", 0)
+			.call(maleAxis)
+			.transition()
+			.delay(2000)
+			.duration(1500)
+			.attr("opacity", 1.0);
+
+
+// Make the first look chart (female data)
+		//
+
+		//Create SVG element
+		var svg = d3.select("#flookChartContainer")  //New target location!
+					.append("svg")
+					.attr("id", "flookChart")
+					.attr("width", w)
+					.attr("height", h);
+
+		//Create groups
+		var groups = svg.selectAll("g")
+						.data(look)
+						.enter()
+						.append("g")
+						.attr("class", "bar")
+						.attr("transform", function(d, i) {
+					  		return "translate(" + lookxScale(i) + ",0)";
+						});
+
+		//Add bar to each group
+		var rects = groups.append("rect")
+						  .attr("x", 0)
+						  .attr("y", function(d) {
+						  		return h - padding;
+						  })
+						  .attr("width", lookxScale.rangeBand())
+						  .attr("height", 0)
+						  .attr("fill", "SteelBlue");
+
+		//Add label to each group
+		groups.append("text")
+			.attr("x", lookxScale.rangeBand() / 2)
+			.attr("y", function(d) {
+				return flookScale(d.female) + 14;
+			})
+			.text(function(d) {
+				return d.name + ": " + d.female;
+			})
+
+		//Transition rects into place
+		rects.transition()
+			.delay(function(d, i) {
+				return i * 100;
+			})
+			.duration(1500)
+			.attr("y", function(d) {
+				return flookScale(d.female);
+			})
+			.attr("height", function(d) {
+				return h - padding - flookScale(d.female);
+			});
+
+		//Create y axis
+		svg.append("g")
+			.attr("class", "axis")
+			.attr("transform", "translate(" + padding + ",0)")
+			.attr("opacity", 0)
+			.call(flookAxis)
+			.transition()
+			.delay(2000)
+			.duration(1500)
+			.attr("opacity", 1.0);
+
+
+
+		//
+		// Make the second look chart (male data)
+		//
+
+		//Create SVG element
+		svg = d3.select("#mlookChartContainer")  //New target location!
+					.append("svg")
+					.attr("id", "mlookChart")
+					.attr("width", w)
+					.attr("height", h);
+
+		//Create groups
+		groups = svg.selectAll("g")
+						.data(look)
+						.enter()
+						.append("g")
+						.attr("class", "bar")
+						.attr("transform", function(d, i) {
+					  		return "translate(" + lookxScale(i) + ",0)";
+						});
+
+		//Add bar to each group
+		rects = groups.append("rect")
+						  .attr("x", 0)
+						  .attr("y", function(d) {
+						  		return h - padding;
+						  })
+						  .attr("width", lookxScale.rangeBand())
+						  .attr("height", 0)
+						  .attr("fill", "SteelBlue");
+
+		//Add label to each group
+		groups.append("text")
+			.attr("x", lookxScale.rangeBand() / 2)
+			.attr("y", function(d) {
+				return mlookScale(d.male) + 14;
+			})
+			.text(function(d) {
+				return d.name + ": " + d.male;
+			})
+
+		//Transition rects into place
+		rects.transition()
+			.delay(function(d, i) {
+				return i * 100;
+			})
+			.duration(1500)
+			.attr("y", function(d) {
+				return mlookScale(d.male);
+			})
+			.attr("height", function(d) {
+				return h - padding - mlookScale(d.male);
+			});
+
+		//Create y axis
+		svg.append("g")
+			.attr("class", "axis")
+			.attr("transform", "translate(" + padding + ",0)")
+			.attr("opacity", 0)
+			.call(mlookAxis)
+			.transition()
+			.delay(2000)
+			.duration(1500)
+			.attr("opacity", 1.0);
+
+
+
+
+
+
+		//New functionality for interaction for ALL groups
+		//in BOTH charts
+		d3.selectAll("g.bar")
+			.on("mouseover", function(d) {
+
+				var thisName = d.name;
+
+				d3.selectAll("g.bar")
+					.filter(function(d) {
+						if (thisName == d.name) {
+							return true;  //…then it's a match
+						}
+					})
+					.classed("highlight", true);
+
+			})
+			.on("mouseout", function() {
+
+				d3.selectAll("g.bar")
+					.classed("highlight", false);
+
+			})
+
+
+
+		//Sorting logic
+		d3.select("#sort")
+			.on("click", function() {
+
+				//Need to reselect all groups in each chart
+				d3.selectAll("#raceChart g.bar").sort(function(a, b) {
+						if (sortByNameOrValue) {
+	  						return d3.ascending(a.name, b.name);
+	  					} else {
+	  						return d3.ascending(a.count, b.count);
+	  					}
+					})
+					.transition()
+					.delay(function(d, i) {
+						return i * 50;
+					})
+					.duration(1000)
+					.attr("transform", function(d, i) {
+				  		return "translate(" + countxScale(i) + ",0)";
+					});
+
+				d3.selectAll("#goalChart g.bar").sort(function(a, b) {
+						if (sortByNameOrValue) {
+	  						return d3.ascending(a.name, b.name);
+	  					} else {
+	  						return d3.ascending(a.count, b.count);
+	  					}
+					})
+					.transition()
+					.delay(function(d, i) {
+						return i * 50;
+					})
+					.duration(1000)
+					.attr("transform", function(d, i) {
+				  		return "translate(" + goalxScale(i) + ",0)";
+					})
+				d3.selectAll("#outChart g.bar").sort(function(a, b) {
+						if (sortByNameOrValue) {
+	  						return d3.ascending(a.name, b.name);
+	  					} else {
+	  						return d3.ascending(a.out, b.out);
+	  					}
+					})
+					.transition()
+					.delay(function(d, i) {
+						return i * 50;
+					})
+					.duration(1000)
+					.attr("transform", function(d, i) {
+				  		return "translate(" + outxScale(i) + ",0)";
+					});
+
+				d3.selectAll("#dateChart g.bar").sort(function(a, b) {
+						if (sortByNameOrValue) {
+	  						return d3.ascending(a.name, b.name);
+	  					} else {
+	  						return d3.ascending(a.date, b.date);
+	  					}
+					})
+					.transition()
+					.delay(function(d, i) {
+						return i * 50;
+					})
+					.duration(1000)
+					.attr("transform", function(d, i) {
+				  		return "translate(" + outxScale(i) + ",0)";
+					})
+				d3.selectAll("#femaleChart g.bar").sort(function(a, b) {
+						if (sortByNameOrValue) {
+	  						return d3.ascending(a.name, b.name);
+	  					} else {
+	  						return d3.ascending(a.female, b.female);
+	  					}
+					})
+					.transition()
+					.delay(function(d, i) {
+						return i * 50;
+					})
+					.duration(1000)
+					.attr("transform", function(d, i) {
+				  		return "translate(" + interestxScale(i) + ",0)";
+					});
+
+				d3.selectAll("#maleChart g.bar").sort(function(a, b) {
+						if (sortByNameOrValue) {
+	  						return d3.ascending(a.name, b.name);
+	  					} else {
+	  						return d3.ascending(a.male, b.male);
+	  					}
+					})
+					.transition()
+					.delay(function(d, i) {
+						return i * 50;
+					})
+					.duration(1000)
+					.attr("transform", function(d, i) {
+				  		return "translate(" + interestxScale(i) + ",0)";
+					});
+				d3.selectAll("#flookChart g.bar").sort(function(a, b) {
+						if (sortByNameOrValue) {
+	  						return d3.ascending(a.name, b.name);
+	  					} else {
+	  						return d3.ascending(a.female, b.female);
+	  					}
+					})
+					.transition()
+					.delay(function(d, i) {
+						return i * 50;
+					})
+					.duration(1000)
+					.attr("transform", function(d, i) {
+				  		return "translate(" + lookxScale(i) + ",0)";
+					});
+
+				d3.selectAll("#mlookChart g.bar").sort(function(a, b) {
+						if (sortByNameOrValue) {
+	  						return d3.ascending(a.name, b.name);
+	  					} else {
+	  						return d3.ascending(a.male, b.male);
+	  					}
+					})
+					.transition()
+					.delay(function(d, i) {
+						return i * 50;
+					})
+					.duration(1000)
+					.attr("transform", function(d, i) {
+				  		return "translate(" + lookxScale(i) + ",0)";
+					});
+
+				//Update text in button
+				d3.select(this)
+					.text(function() {
+						if (sortByNameOrValue) {
+							return "Sort by Value";
+						} else {
+							return "Sort by Name";
+						}
+					})
+
+				//Flip value of boolean
+				sortByNameOrValue = !sortByNameOrValue;
+
+			});
+
+
+
+	</script>
+</body>
+</html>

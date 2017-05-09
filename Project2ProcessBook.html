@@ -1,0 +1,74 @@
+<!doctype html>
+<title>Project 2 Process Book</title>
+
+  <link href="http://auburn.edu/~azm0083/css/bootstrap.min.css" rel="stylesheet">
+
+
+    <nav id="navBar" class="navbar-inverse navbar-default navbar-fixed-top" role="navigation"> 
+    <!-- <div class="navbar-inverse navbar-default" role="navigation"> -->
+    <div class="container-fluid">
+        <div class="navbar-header">
+       <!-- We are missing the color for the letters -->       
+          <a class="navbar-brand" href="./" style="color:#4b6086">Speed Dating</a>
+        </div>
+    <div class="collapse navbar-collapse">
+      <ul class="nav navbar-nav">
+       <li><a href="file:///Users/heatherbonsky/Desktop/D3/Project2ParallelCoordinates.html">Parallel Coordinates</a></li>  
+        <li href="active"><a href="file:///Users/heatherbonsky/Desktop/D3/Project2BarCharts.html">Bar Charts</a></li>        
+        <li><a href="#">Process Map</a></li>
+      </ul>
+        </div>
+    </div>
+    </nav>
+
+    <h1>" "</h1>
+    <h2 style ="margin-left:10px">Speed Dating Interest Variances</h2>
+
+    <h3 style ="margin-left:10px">Overview</h3>
+<p style ="margin-left:40px; margin-right:40px"> The purpose of this project is to better understand speed dating, specifically those who match when speed dating. To better understand this, we only looked at the pairs that matched and how they scored specific activities. Before the speed dating began, each candidate was asked to score the same 17 activities on a scale of 1=10 based on how interested they are in that activity.</p>
+
+<p style ="margin-left:40px; margin-right:40px"> 
+This analysis was based on the difference (variance) in scoring amongst each match. For example, on the "Parallel Coordinates" tab, if the value for dining is equal to 3 then the man and woman who matched scored dining differently by only 3 points (ex. man gave dining a 10 in interest and the woman only gave it a 7). 
+</p>
+
+<p style ="margin-left:40px; margin-right:40px">
+When looking at "Parellel Coordinates" tab in particular, we displayed the difference in interest levels in both a table as well as a graph. This tab is interactive in which one can hover over a match on the table and that match will appear on the graph. Therefore, the user can visually see the difference in scoreing from one activity to the next <b> and </b> from one obervation to the next.
+</p>
+
+<p style ="margin-left:40px; margin-right:40px">
+Then, when looking at the "Bar Charts" tab one can see the percent (seperated by activity) of similar/difference ratings. We classified a "similar rating" if the match's difference in interest rating was anything between 0-3 (with a 0 being the same interest rating). A "difference rating" was any match that scored 4 or above.
+</p>
+
+    <h3 style ="margin-left:10px">Findings</h3>
+<p style ="margin-left:40px; margin-right:40px">
+When looking at the parallel coordinates we found that matches do not have to have the same interest level across all activities. In fact, some matches do not have a zero (the same exact rating) for a single interest. Most commonly, a match will have similar ratings for some activities and dissimar ratings for others. We hypothesize that the activities wiht similar ratings are more important to the couple than the other activites; howeever, more analysis will need to be done to fully understand this.
+</p>
+
+<p style ="margin-left:40px; margin-right:40px">
+Looking at the bar charts one can see that a higher percentage of matches score activities similarly than differently. We can also see that matches who scored activites the exact same make up about 10%-20% of similar matches. It is also interesting to note that activities such as reading and dining have higher percentages of similar scoreing where as tvsports and yoga have lower percentages of similar scoreing. This leads us to believe that having the same interest level in reading and dining matters more to our speed daters than tvsports and yoga. Perhaps, this is because reading and dining are less gender polarizing than watching sports on tv or doing yoga (yet again, this is just speculation and needs more analysis).
+</p>
+
+	<h3 style ="margin-left:10px">Obtaining and Preprocessing the Data</h3>
+
+<p style ="margin-left:40px; margin-right:40px">
+We obtained the data from Kaggle (https://www.kaggle.com/annavictoria/speed-dating-experiment). This dataset was very wide and included a multitude of variables about candidate dempgraphics, interests, and scoreing mechanisms for their partners. We chose to subset the dataset to include the person, their match, and their interest ratings for activities.
+</p>
+
+<p style ="margin-left:40px; margin-right:40px">
+One of the problems we encoutered during this preprocessing was that some nights candidates scored their interests based on different scales. So, took these obervations, as well as obervations with missing data out of our dataset. Once these obervations were pulled from the dataset, we then subsetted the data to only contain matches. With this new cleaned dataset, we performed the computations to gain the variance in in the matches' interest ratings.
+</p>
+
+
+	<h3 style ="margin-left:10px">The Design Process</h3>
+<p style ="margin-left:40px; margin-right:40px">
+This process took many iterations. At first, this project was simple bar charts (descriptive statistics) used to better understand the dataset (see below). These charts were used before most the the data preprocessing was complete and were used by us to get a general understanding of the dataset as well as some features in d3.
+</p>	
+
+<li style ="margin-left:40px" ><a href="file:///Users/heatherbonsky/Desktop/D3/DescriptiveStatistics.html">Descriptive Statistics</a></li>
+	
+
+<p style ="margin-left:40px; margin-right:40px">
+Then, we began making parallel coordinates on the activities based on gender (see below). From these graphs, we decided to focus in only on those who have matched. Therefore, we build the final project. 
+</p>
+
+<li style ="margin-left:40px"><a href="file:///Users/heatherbonsky/Desktop/D3/GenderParallelCoordinates.html">Parallel Coordinates Based on Gender</a></li>
